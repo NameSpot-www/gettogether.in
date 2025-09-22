@@ -3,115 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Calendar</title>
+    <title>Aura Sync Calendar</title>
     <style>
+        :root {
+            --background-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #bb86fc;
+            --primary-variant-color: #3700b3;
+            --secondary-color: #03dac6;
+            --text-color: #e0e0e0;
+            --subtle-text-color: #a0a0a0;
+            --error-color: #cf6679;
+        }
+
         body {
-            background-color: #f0f0f0;
+            background-color: var(--background-color);
             background-image:
-                linear-gradient(45deg, #f9d1b7 25%, transparent 25%),
-                linear-gradient(-45deg, #f9d1b7 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #f9d1b7 75%),
-                linear-gradient(-45deg, transparent 75%, #f9d1b7 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
             font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #auth-container {
+            width: 100%;
+            max-width: 1100px;
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        #login-btn, #logout-btn {
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        #login-btn:hover, #logout-btn:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        #user-info {
+            margin-right: 15px;
+            color: var(--subtle-text-color);
         }
 
         #calendar-container {
-            background-color: #ffffff;
+            width: 100%;
+            max-width: 1100px;
+            background-color: var(--surface-color);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* Style for the calendar events to make notes visible */
-        .fc-event-main-frame {
-            padding: 2px 4px;
-        }
-        .fc-daygrid-event {
-            white-space: normal !important; /* Allow text to wrap */
-            align-items: flex-start; /* Align text to the top */
-        }
-
-        .fc-event-title {
-            font-weight: normal;
-            font-size: 0.8em;
-        }
-
-        .fc-toolbar-title {
-            color: #ff6b6b;
-        }
-
-        .fc-button-primary {
-            background-color: #ff6b6b;
-            border-color: #ff6b6b;
-        }
-
-        .fc-button-primary:hover {
-            background-color: #ff8e8e;
-            border-color: #ff8e8e;
-        }
-
+        /* FullCalendar Dark Theme Overrides */
+        .fc { color: var(--text-color); }
+        .fc .fc-toolbar-title { color: var(--primary-color); }
+        .fc .fc-button-primary { background-color: var(--primary-variant-color); border-color: var(--primary-variant-color); }
+        .fc .fc-daygrid-day.fc-day-today { background-color: rgba(187, 134, 252, 0.15); }
+        .fc-daygrid-event { white-space: normal !important; background-color: var(--primary-color); border: none; padding: 2px 4px; color: #000; }
+        .fc-event-main { font-weight: bold; }
+        .fc a { color: var(--secondary-color); }
+        .fc-col-header-cell-cushion { text-decoration: none; }
+        
         .modal {
-            display: none;
+            display: none; /* Hidden by default */
             position: fixed;
             z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
         }
 
         .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-            max-width: 500px;
+            background-color: var(--surface-color);
+            padding: 25px;
             border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        #note-input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            box-sizing: border-box;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        #save-note {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+        .modal-content h2 { color: var(--primary-color); margin-top: 0; }
+        .modal-content textarea { width: 100%; background-color: #333; color: var(--text-color); border-radius: 5px; border: 1px solid #555; padding: 10px; box-sizing: border-box; }
+        .modal-content button { padding: 10px 15px; border-radius: 5px; border: none; cursor: pointer; margin-top: 10px; margin-right: 10px; font-weight: bold; }
+        #save-note { background-color: var(--secondary-color); color: #000; }
+        #delete-note { background-color: var(--error-color); color: #000; }
+        #close-modal { background-color: #555; color: var(--text-color); }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Firebase Libraries -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
+
+    <div id="auth-container">
+        <span id="user-info" style="display:none;"></span>
+        <button id="login-btn">Sign in with Google</button>
+        <button id="logout-btn" style="display:none;">Logout</button>
+    </div>
 
     <div id="calendar-container">
         <div id='calendar'></div>
@@ -119,101 +124,157 @@
 
     <div id="note-modal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2 id="modal-title">Add a note for</h2>
+            <h2 id="modal-title"></h2>
             <textarea id="note-input" rows="4"></textarea>
-            <button id="save-note">Save Note</button>
+            <div>
+                <button id="save-note">Save</button>
+                <button id="delete-note">Delete</button>
+                <button id="close-modal">Close</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // STEP 3: PASTE YOUR FIREBASE CONFIGURATION OBJECT HERE
+        const firebaseConfig = {
+  apiKey: "AIzaSyCP-OHLOdg0IAM_ZfleYH0RQDWCE-3ucP4",
+  authDomain: "gettogether-25fc5.firebaseapp.com",
+  databaseURL: "https://gettogether-25fc5-default-rtdb.firebaseio.com",
+  projectId: "gettogether-25fc5",
+  storageBucket: "gettogether-25fc5.firebasestorage.app",
+  messagingSenderId: "590681280222",
+  appId: "1:590681280222:web:76df52100fe605c382bc4f",
+  measurementId: "G-J13EQX9JYG"
+};
+
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const provider = new firebase.auth.GoogleAuthProvider();
+
         document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var modal = document.getElementById('note-modal');
-            var closeModal = document.getElementsByClassName('close')[0];
-            var saveNoteButton = document.getElementById('save-note');
-            var noteInput = document.getElementById('note-input');
-            var modalTitle = document.getElementById('modal-title');
-            var selectedDate;
-
-            // Function to load notes from local storage
-            function loadNotes() {
-                var notes = localStorage.getItem('calendarNotes');
-                return notes ? JSON.parse(notes) : {};
-            }
-
-            // Function to save notes to local storage
-            function saveNotes(notes) {
-                localStorage.setItem('calendarNotes', JSON.stringify(notes));
-            }
+            const calendarEl = document.getElementById('calendar');
+            const modal = document.getElementById('note-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const noteInput = document.getElementById('note-input');
+            const saveNoteBtn = document.getElementById('save-note');
+            const deleteNoteBtn = document.getElementById('delete-note');
+            const closeModalBtn = document.getElementById('close-modal');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const userInfo = document.getElementById('user-info');
             
-            // Function to convert notes object to FullCalendar events array
-            function notesToEvents(notes) {
-                return Object.keys(notes).map(function(date) {
-                    return {
-                        title: notes[date], // Use the note text as the title
-                        start: date,
-                        allDay: true,
-                        display: 'block' // Ensures the event is rendered as a block
-                    };
-                });
-            }
+            let selectedDateStr = null;
+            let selectedEventId = null;
+            let currentUser = null;
 
-            var notes = loadNotes();
-
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
+                height: 'auto', // Responsive height
+                events: [],
                 dateClick: function(info) {
-                    selectedDate = info.dateStr;
-                    modalTitle.innerText = 'Add/Edit note for ' + selectedDate;
-                    noteInput.value = notes[selectedDate] || '';
-                    modal.style.display = 'block';
+                    if (!currentUser) {
+                        alert("Please sign in to add a note.");
+                        return;
+                    }
+                    selectedDateStr = info.dateStr;
+                    selectedEventId = null;
+                    modalTitle.innerText = `Add Note for ${selectedDateStr}`;
+                    noteInput.value = '';
+                    deleteNoteBtn.style.display = 'none';
+                    modal.style.display = 'flex';
                 },
                 eventClick: function(info) {
-                    selectedDate = info.event.startStr;
-                    modalTitle.innerText = 'Add/Edit note for ' + selectedDate;
-                    noteInput.value = notes[selectedDate] || '';
-                    modal.style.display = 'block';
-                },
-                events: notesToEvents(notes),
-                eventContent: function(arg) {
-                    return { html: `<div>${arg.event.title}</div>` };
-                } // Custom render to show the note text
+                    if (!currentUser) {
+                        alert("Please sign in to interact with notes.");
+                        return;
+                    }
+                    if (currentUser.uid !== info.event.extendedProps.authorId) {
+                        alert("This note was created by another user. You can view it but not edit or delete it.");
+                        return;
+                    }
+                    selectedEventId = info.event.id;
+                    selectedDateStr = info.event.startStr;
+                    modalTitle.innerText = `Edit Note for ${selectedDateStr}`;
+                    noteInput.value = info.event.title;
+                    deleteNoteBtn.style.display = 'inline-block';
+                    modal.style.display = 'flex';
+                }
             });
 
             calendar.render();
 
-            closeModal.onclick = function() {
-                modal.style.display = 'none';
-            }
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    currentUser = user;
+                    loginBtn.style.display = 'none';
+                    logoutBtn.style.display = 'inline-block';
+                    userInfo.innerText = `Signed in as ${user.displayName}`;
+                    userInfo.style.display = 'inline';
+                    loadNotesFromFirebase();
+                } else {
+                    currentUser = null;
+                    loginBtn.style.display = 'inline-block';
+                    logoutBtn.style.display = 'none';
+                    userInfo.style.display = 'none';
+                    calendar.removeAllEvents();
+                }
+            });
 
-            window.onclick = function(event) {
-                if (event.target == modal) {
+            loginBtn.onclick = () => auth.signInWithPopup(provider);
+            logoutBtn.onclick = () => auth.signOut();
+            closeModalBtn.onclick = () => modal.style.display = 'none';
+
+            saveNoteBtn.onclick = () => {
+                const noteText = noteInput.value.trim();
+                if (!noteText) return;
+
+                const noteData = {
+                    title: noteText,
+                    start: selectedDateStr,
+                    allDay: true,
+                    authorId: currentUser.uid,
+                };
+
+                if (selectedEventId) { // Update
+                    database.ref('notes/' + selectedEventId).update(noteData);
+                } else { // Create
+                    database.ref('notes').push(noteData);
+                }
+                modal.style.display = 'none';
+            };
+            
+            deleteNoteBtn.onclick = () => {
+                if (confirm("Are you sure you want to delete this note?")) {
+                    if (selectedEventId) {
+                        database.ref('notes/' + selectedEventId).remove();
+                    }
                     modal.style.display = 'none';
                 }
-            }
+            };
 
-            saveNoteButton.onclick = function() {
-                var noteText = noteInput.value.trim();
-                if (noteText) {
-                    notes[selectedDate] = noteText;
-                } else {
-                    delete notes[selectedDate];
-                }
-                saveNotes(notes);
-                modal.style.display = 'none';
-                
-                // Reload events from the updated notes object
-                calendar.removeAllEvents();
-                calendar.addEventSource(notesToEvents(notes));
+            function loadNotesFromFirebase() {
+                const notesRef = database.ref('notes');
+                notesRef.on('value', (snapshot) => {
+                    calendar.removeAllEvents();
+                    const notes = snapshot.val();
+                    if (notes) {
+                        const events = Object.keys(notes).map(key => ({
+                            id: key,
+                            ...notes[key]
+                        }));
+                        calendar.addEventSource(events);
+                    }
+                });
             }
         });
     </script>
-
 </body>
 </html>
