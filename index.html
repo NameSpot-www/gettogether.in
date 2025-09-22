@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Calendar</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            background-image:
+                linear-gradient(45deg, #f9d1b7 25%, transparent 25%),
+                linear-gradient(-45deg, #f9d1b7 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f9d1b7 75%),
+                linear-gradient(-45deg, transparent 75%, #f9d1b7 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #calendar-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style for the calendar events to make notes visible */
+        .fc-event-main-frame {
+            padding: 2px 4px;
+        }
+        .fc-daygrid-event {
+            white-space: normal !important; /* Allow text to wrap */
+            align-items: flex-start; /* Align text to the top */
+        }
+
+        .fc-event-title {
+            font-weight: normal;
+            font-size: 0.8em;
+        }
+
+        .fc-toolbar-title {
+            color: #ff6b6b;
+        }
+
+        .fc-button-primary {
+            background-color: #ff6b6b;
+            border-color: #ff6b6b;
+        }
+
+        .fc-button-primary:hover {
+            background-color: #ff8e8e;
+            border-color: #ff8e8e;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #note-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            box-sizing: border-box;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        #save-note {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="calendar-container">
+        <div id='calendar'></div>
+    </div>
+
+    <div id="note-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="modal-title">Add a note for</h2>
+            <textarea id="note-input" rows="4"></textarea>
+            <button id="save-note">Save Note</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var modal = document.getElementById('note-modal');
+            var closeModal = document.getElementsByClassName('close')[0];
+            var saveNoteButton = document.getElementById('save-note');
+            var noteInput = document.getElementById('note-input');
+            var modalTitle = document.getElementById('modal-title');
+            var selectedDate;
+
+            // Function to load notes from local storage
+            function loadNotes() {
+                var notes = localStorage.getItem('calendarNotes');
+                return notes ? JSON.parse(notes) : {};
+            }
+
+            // Function to save notes to local storage
+            function saveNotes(notes) {
+                localStorage.setItem('calendarNotes', JSON.stringify(notes));
+            }
+            
+            // Function to convert notes object to FullCalendar events array
+            function notesToEvents(notes) {
+                return Object.keys(notes).map(function(date) {
+                    return {
+                        title: notes[date], // Use the note text as the title
+                        start: date,
+                        allDay: true,
+                        display: 'block' // Ensures the event is rendered as a block
+                    };
+                });
+            }
+
+            var notes = loadNotes();
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                dateClick: function(info) {
+                    selectedDate = info.dateStr;
+                    modalTitle.innerText = 'Add/Edit note for ' + selectedDate;
+                    noteInput.value = notes[selectedDate] || '';
+                    modal.style.display = 'block';
+                },
+                eventClick: function(info) {
+                    selectedDate = info.event.startStr;
+                    modalTitle.innerText = 'Add/Edit note for ' + selectedDate;
+                    noteInput.value = notes[selectedDate] || '';
+                    modal.style.display = 'block';
+                },
+                events: notesToEvents(notes),
+                eventContent: function(arg) {
+                    return { html: `<div>${arg.event.title}</div>` };
+                } // Custom render to show the note text
+            });
+
+            calendar.render();
+
+            closeModal.onclick = function() {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+
+            saveNoteButton.onclick = function() {
+                var noteText = noteInput.value.trim();
+                if (noteText) {
+                    notes[selectedDate] = noteText;
+                } else {
+                    delete notes[selectedDate];
+                }
+                saveNotes(notes);
+                modal.style.display = 'none';
+                
+                // Reload events from the updated notes object
+                calendar.removeAllEvents();
+                calendar.addEventSource(notesToEvents(notes));
+            }
+        });
+    </script>
+
+</body>
+</html>
